@@ -101,3 +101,4 @@ Sistema de control biométrico empresarial — Versión 21.0 (2025)
 > *Este software es de uso privado y está protegido por licencia de hardware. Su copia, redistribución o uso no autorizado está prohibido.*
 "# Huellero_Coorserpark_Escritorio" 
 "# Huellero_Coorserpark_Escritorio" 
+"# Huellero_Coorserpark_Escritorio" 
