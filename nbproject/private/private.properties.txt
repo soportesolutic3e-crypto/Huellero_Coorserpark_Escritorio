@@ -1,0 +1,14 @@
+compile.on.save=true
+do.depend=true
+do.jar=true
+do.jlink=false
+file.reference.dpfpenrollment.jar-1=E:\\control_huellero\\Manu_doc_cod_fuente_entregado\\INSOCAP\\java CoorserparkIngreso 28-04-2017\\CoorserparkIngreso\\src\\lib_proyecto\\dpfpenrollment.jar
+file.reference.dpfpverification.jar-1=E:\\control_huellero\\Manu_doc_cod_fuente_entregado\\INSOCAP\\java CoorserparkIngreso 28-04-2017\\CoorserparkIngreso\\src\\lib_proyecto\\dpfpverification.jar
+file.reference.dpotapi.jar-1=E:\\control_huellero\\Manu_doc_cod_fuente_entregado\\INSOCAP\\java CoorserparkIngreso 28-04-2017\\CoorserparkIngreso\\src\\lib_proyecto\\dpotapi.jar
+file.reference.dpotjni.jar-1=E:\\control_huellero\\Manu_doc_cod_fuente_entregado\\INSOCAP\\java CoorserparkIngreso 28-04-2017\\CoorserparkIngreso\\src\\lib_proyecto\\dpotjni.jar
+file.reference.java-json.jar-1=E:\\control_huellero\\Manu_doc_cod_fuente_entregado\\INSOCAP\\java CoorserparkIngreso 28-04-2017\\CoorserparkIngreso\\src\\lib_proyecto\\java-json.jar
+file.reference.sqlite-jdbc-3.8.11.2.jar-1=E:\\control_huellero\\Manu_doc_cod_fuente_entregado\\INSOCAP\\java CoorserparkIngreso 28-04-2017\\CoorserparkIngreso\\src\\lib_proyecto\\sqlite-jdbc-3.8.11.2.jar
+javac.debug=true
+javadoc.preview=true
+jlink.strip=false
+user.properties.file=C:\\Users\\DELL\\AppData\\Roaming\\NetBeans\\19\\build.properties

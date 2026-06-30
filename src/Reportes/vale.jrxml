@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report name" pageWidth="555" pageHeight="802" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="f856684c-5d0a-4e36-b84d-90a40a6cfc12">
+	<property name="ireport.zoom" value="3.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="p_nombres" class="java.lang.String"/>
+	<parameter name="p_barras1" class="java.lang.String"/>
+	<parameter name="p_depto" class="java.lang.String"/>
+	<parameter name="p_sede" class="java.lang.String"/>
+	<parameter name="p_fecha" class="java.lang.String"/>
+	<parameter name="p_empresa" class="java.lang.String"/>
+	<parameter name="p_vale" class="java.lang.String"/>
+	<parameter name="p_cedula" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="c_nombres" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="140" splitType="Stretch">
+			<textField>
+				<reportElement x="11" y="31" width="200" height="18" uuid="63a1d6c6-255e-41fb-a73b-c331d6860016"/>
+				<textElement>
+					<font fontName="SansSerif" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{p_nombres}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="11" y="44" width="200" height="18" uuid="85741893-9e3c-47cf-ac81-d815d7c8d2bb"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{p_depto}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="11" y="53" width="200" height="18" uuid="c856ab5b-49e1-46cc-aa4f-89b92f7a68b6"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{p_sede}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="11" y="62" width="200" height="22" uuid="12d7171f-e36e-4c05-8cf8-0e0603395e3e"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{p_fecha}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="10" y="1" width="200" height="18" uuid="b9f93487-2daa-43e8-8bdc-323e3bd74874"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{p_empresa}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="11" y="18" width="182" height="20" uuid="7049da43-19a3-413d-9114-bb00a1039457"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{p_vale}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="11" y="72" width="200" height="50" uuid="0baa513a-f64d-479d-999d-4bd2a1090cee"/>
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="USD4" drawText="true" checksumRequired="false">
+					<jr:codeExpression><![CDATA[$P{p_barras1}]]></jr:codeExpression>
+				</jr:barbecue>
+			</componentElement>
+		</band>
+	</detail>
+</jasperReport>
