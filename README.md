@@ -1,12 +1,12 @@
-# 🖐️ CORSERPARK — Sistema de Control de Huellas v21.0
+# 🖐️ COORSERPARK — Sistema de Control de Huellas v21.0
 
-> **La versión más estable y completa del sistema biométrico de control de asistencia desarrollado por Solutic 3E.**
+> **La versión más estable y completa del sistema biométrico de control de asistencia desarrollado por Solutic3E.**
 
 ---
 
 ## ¿Qué es esto?
 
-**CORSERPARK Control de Huellas** es una aplicación de escritorio que permite a las empresas registrar la entrada y salida de sus empleados usando **huella dactilar o tarjeta RFID**, sin depender de internet en tiempo real. Los datos se sincronizan automáticamente con un servidor central cuando hay conexión disponible.
+**COORSERPARK Control de Huellas** es una aplicación de escritorio que permite a las empresas registrar la entrada y salida de sus empleados usando **huella dactilar o tarjeta RFID**, sin depender de internet en tiempo real. Los datos se sincronizan automáticamente con un servidor central cuando hay conexión disponible.
 
 Desarrollado y mantenido por **Solutic 3E**, este sistema lleva más de 20 versiones de evolución y la **versión 21** representa su estado más maduro, estable y visualmente moderno.
 
@@ -93,7 +93,7 @@ src/
 
 ## 👨‍💻 Desarrollado por
 
-**Solutic 3E**
+**Solutic3E - Transformando Ideas**
 Sistema de control biométrico empresarial — Versión 21.0 (2025)
 
 ---
