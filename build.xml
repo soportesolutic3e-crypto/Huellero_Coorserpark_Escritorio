@@ -71,10 +71,23 @@
 
     -->
 	
-	 <target name="-post-compile">
+    <target name="-post-compile">
         <copy todir="${build.classes.dir}/vistas">
             <fileset dir="${src.dir}/vistas" includes="**/*.png,**/*.jpg,**/*.gif"/>
         </copy>
     </target>
-	
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         ProGuard: ofuscación automática después de generar el JAR
+         Genera dist/ControlSolutic-obf.jar (listo para distribuir)
+    ════════════════════════════════════════════════════════════════ -->
+    <target name="-post-jar">
+        <java jar="D:/Programas_Desarrollo_General/Huellero_VERSION21/Librerias/proguard.jar"
+              fork="true" failonerror="true" dir="${basedir}">
+            <arg value="@proguard.cfg"/>
+            <jvmarg value="-Xmx512m"/>
+        </java>
+        <echo message="✔ JAR ofuscado generado: dist/ControlSolutic-obf.jar"/>
+    </target>
+
 </project>
