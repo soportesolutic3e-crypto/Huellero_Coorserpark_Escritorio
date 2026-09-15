@@ -1,11 +1,14 @@
 package process;
 
+import database.ConexionDb;
 import java.io.*;
 import java.net.NetworkInterface;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.security.MessageDigest;
+import java.sql.SQLException;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.UUID;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -64,23 +67,74 @@ public class LicenciaManager {
         }
     }
 
+    /**
+     * Llama esto cuando el usuario intenta usar la app (Registro o Enrolamiento).
+     * Requiere que id_sede ya esté configurado en SQLite.
+     * Si no hay id_sede, deja pasar (sede aún no configurada).
+     * Si no hay internet, deja pasar (permisivo).
+     */
+    public static Resultado verificarServidor() {
+        try {
+            String idSede = getIdSede();
+            if (idSede.isEmpty()) return new Resultado(true, "OK", "OK", "OK", "OK", "LIC-OK");
+
+            Path ruta = Paths.get(CARPETA, ARCHIVO);
+            if (!Files.exists(ruta)) return new Resultado(true, "OK", "OK", "OK", "OK", "LIC-OK");
+
+            // Leer encHex del archivo
+            String encHex = null;
+            String raw = new String(Files.readAllBytes(ruta), StandardCharsets.UTF_8);
+            for (String line : raw.split("\n")) {
+                line = line.trim();
+                if (!line.isEmpty() && !line.startsWith("#")) { encHex = line; break; }
+            }
+            if (encHex == null) return new Resultado(true, "OK", "OK", "OK", "OK", "LIC-OK");
+
+            HashMap<String, String> p = new HashMap<>();
+            p.put("id_sede",     idSede);
+            p.put("lic_content", encHex);
+
+            // Registrar (si ya existe en servidor, el WS lo ignora o actualiza)
+            JSONTask reg = new JSONTask("registrarLicencia", p);
+            reg.enviar(false, null);
+
+            // Validar estado
+            JSONTask val = new JSONTask("validarLicencia", p);
+            val.enviar(false, null);
+
+            if (!val.error && val.respuesta != null) {
+                String estado = val.respuesta.get("estado");
+                if ("BLOQUEADA".equals(estado)) {
+                    return new Resultado(false, "BLOQUEADA", "OK", "OK", "OK", "LIC-004");
+                }
+                if ("INACTIVA".equals(estado)) {
+                    return new Resultado(false, "INACTIVA", "OK", "OK", "OK", "LIC-005");
+                }
+                if ("NO_COINCIDE".equals(estado)) {
+                    return new Resultado(false, "NO_COINCIDE", "OK", "OK", "OK", "LIC-006");
+                }
+            }
+        } catch (Exception ignored) { }
+
+        return new Resultado(true, "OK", "OK", "OK", "OK", "LIC-OK");
+    }
+
     // ── Activación (primera vez) ──────────────────────────────────────────────
 
     private static void activar(Path ruta) throws Exception {
         Files.createDirectories(ruta.getParent());
 
-        String mac   = getMAC();
         String disco = getDiskSerial();
         String cpu   = getProcessorID();
         String salt  = UUID.randomUUID().toString();
-        String hash  = sha256(mac + disco + cpu + salt);
+        String hash  = sha256(disco + cpu + salt);
 
-        String datos    = hash + "|" + salt + "|" + mac + "|" + disco + "|" + cpu;
-        String encHex   = encriptar(datos);
+        String datos   = hash + "|" + salt + "|" + disco + "|" + cpu;
+        String encHex  = encriptar(datos);
 
-        String archivo  = "# Licencia creada por Solutic 3E"        + "\n"
-                        + encHex                                      + "\n"
-                        + "# Licencia autorizada - Version 21.0.0"  + "\n";
+        String archivo = "# Licencia creada por Solutic 3E"        + "\n"
+                       + encHex                                      + "\n"
+                       + "# Licencia autorizada - Version 22.0.0"  + "\n";
 
         Files.write(ruta, archivo.getBytes(StandardCharsets.UTF_8));
 
@@ -88,6 +142,7 @@ public class LicenciaManager {
         try {
             Runtime.getRuntime().exec("attrib +H \"" + ruta.toAbsolutePath() + "\"");
         } catch (Exception ignored) { }
+
     }
 
     // ── Validación ────────────────────────────────────────────────────────────
@@ -104,28 +159,42 @@ public class LicenciaManager {
                 if (!line.isEmpty() && !line.startsWith("#")) { encHex = line; break; }
             }
             if (encHex == null) return new Resultado(false, "CORRUPTO", "?", "?", "?", "LIC-001");
+
             String contenido = desencriptar(encHex);
-            String[] partes = contenido.split("\\|", 5);
-            if (partes.length != 5) {
+            String[] partes  = contenido.split("\\|", -1);
+
+            String hashGuardado, salt, discoGuardado, cpuGuardado;
+            boolean formatoViejo;
+
+            if (partes.length == 4) {
+                // Formato nuevo: hash|salt|disco|cpu
+                formatoViejo  = false;
+                hashGuardado  = partes[0];
+                salt          = partes[1];
+                discoGuardado = partes[2];
+                cpuGuardado   = partes[3];
+            } else if (partes.length == 5) {
+                // Formato viejo: hash|salt|mac|disco|cpu
+                formatoViejo  = true;
+                hashGuardado  = partes[0];
+                salt          = partes[1];
+                // partes[2] = mac (ignorada en comparación)
+                discoGuardado = partes[3];
+                cpuGuardado   = partes[4];
+            } else {
                 return new Resultado(false, "CORRUPTO", "?", "?", "?", "LIC-001");
             }
 
-            String hashGuardado = partes[0];
-            String salt         = partes[1];
-            String macGuardada  = partes[2];
-            String discoGuardado= partes[3];
-            String cpuGuardado  = partes[4];
-
-            String macActual   = getMAC();
             String discoActual = getDiskSerial();
             String cpuActual   = getProcessorID();
 
-            if (!macActual.equals(macGuardada))    { macEst   = "NO COINCIDE"; ok = false; }
-            if (!discoActual.equals(discoGuardado)){ discoEst = "NO COINCIDE"; ok = false; }
-            if (!cpuActual.equals(cpuGuardado))    { cpuEst   = "NO COINCIDE"; ok = false; }
+            if (!discoActual.equals(discoGuardado)) { discoEst = "NO COINCIDE"; ok = false; }
+            if (!cpuActual.equals(cpuGuardado))     { cpuEst   = "NO COINCIDE"; ok = false; }
 
             if (ok) {
-                String hashActual = sha256(macActual + discoActual + cpuActual + salt);
+                String hashActual = formatoViejo
+                    ? sha256(partes[2] + discoActual + cpuActual + salt)  // viejo: usa MAC guardada
+                    : sha256(discoActual + cpuActual + salt);              // nuevo: sin MAC
                 if (!hashActual.equals(hashGuardado)) {
                     ok = false;
                     archEst = "HASH INVÁLIDO";
@@ -136,8 +205,26 @@ public class LicenciaManager {
             return new Resultado(false, "ILEGIBLE", "?", "?", "?", "LIC-002");
         }
 
-        String codigo = ok ? "LIC-OK" : "LIC-003";
-        return new Resultado(ok, archEst, macEst, discoEst, cpuEst, codigo);
+        if (!ok) {
+            return new Resultado(false, archEst, macEst, discoEst, cpuEst, "LIC-003");
+        }
+
+        return new Resultado(true, archEst, macEst, discoEst, cpuEst, "LIC-OK");
+    }
+
+    // ── Sede ──────────────────────────────────────────────────────────────────
+
+    private static String getIdSede() {
+        ConexionDb d = new ConexionDb();
+        try {
+            d.Conectar();
+            HashMap<String, String> res = d.selectOne("SELECT valor FROM config WHERE dato='id_sede'");
+            if (res != null && res.get("valor") != null) return res.get("valor").trim();
+        } catch (SQLException ignored) {
+        } finally {
+            try { d.close(); } catch (Exception ignored) { }
+        }
+        return "";
     }
 
     // ── Hardware ──────────────────────────────────────────────────────────────

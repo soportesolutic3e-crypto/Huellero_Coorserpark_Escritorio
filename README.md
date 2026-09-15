@@ -1,4 +1,4 @@
-# 🖐️ COORSERPARK — Sistema de Control de Huellas v21.0
+# 🖐️ COORSERPARK — Sistema de Control de Huellas v22.0
 
 > **La versión más estable y completa del sistema biométrico de control de asistencia desarrollado por Solutic3E.**
 
@@ -94,7 +94,7 @@ src/
 ## 👨‍💻 Desarrollado por
 
 **Solutic3E - Transformando Ideas**
-Sistema de control biométrico empresarial — Versión 21.0 (2025)
+Sistema de control biométrico empresarial — Versión 22.0 (2025)
 
 ---
 

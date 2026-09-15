@@ -90,19 +90,24 @@ public class LicenciaErrorDialog extends JDialog {
 
         // Mensaje principal
         g.gridx=0; g.gridy=0; g.gridwidth=2; g.insets=new Insets(0,0,14,0);
-        JLabel msg = new JLabel("No se pudo validar la licencia en este equipo.");
+        String mensajePrincipal;
+        switch (r.codigo) {
+            case "LIC-004": mensajePrincipal = "La licencia de este equipo está BLOQUEADA."; break;
+            case "LIC-005": mensajePrincipal = "La licencia de este equipo aún no ha sido activada."; break;
+            case "LIC-006": mensajePrincipal = "La licencia no es válida. Contacte al administrador."; break;
+            default:        mensajePrincipal = "No se pudo validar la licencia en este equipo."; break;
+        }
+        JLabel msg = new JLabel(mensajePrincipal);
         msg.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         msg.setForeground(TXT_PRI);
         card.add(msg, g);
 
         g.gridwidth=1;
-        addFila(card, g, 1, "Archivo de licencia", r.archivoEstado);
-        addFila(card, g, 2, "MAC address",         r.macEstado);
-        addFila(card, g, 3, "Serial de disco",     r.discoEstado);
-        addFila(card, g, 4, "ID de procesador",    r.cpuEstado);
+        boolean esServidor = "LIC-004".equals(r.codigo) || "LIC-005".equals(r.codigo) || "LIC-006".equals(r.codigo);
 
         // Nota
-        g.gridx=0; g.gridy=5; g.gridwidth=2; g.insets=new Insets(16,0,0,0);
+        int filaNote = esServidor ? 1 : 5;
+        g.gridx=0; g.gridy=filaNote; g.gridwidth=2; g.insets=new Insets(16,0,0,0);
         JLabel nota = new JLabel("Contacte al administrador del sistema.");
         nota.setFont(new Font("Segoe UI", Font.ITALIC, 11));
         nota.setForeground(TXT_MUT);

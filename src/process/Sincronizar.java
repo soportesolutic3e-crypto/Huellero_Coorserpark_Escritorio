@@ -62,7 +62,7 @@ public class Sincronizar implements Runnable {
      public static final AtomicBoolean lockEnvioEventos = new AtomicBoolean(false);
 
 
-    private String wqueversion = "21.0.0";
+    private String wqueversion = "22.0.0";
     private String wwclave = "";
 
     public String wsino_red = "";
@@ -313,7 +313,7 @@ public class Sincronizar implements Runnable {
                     ); 
                     st.executeUpdate(
                             "INSERT INTO sedes_tmp(id_sede,sede,backup,versionactualapp,imprimir_vales) " +
-                                    "VALUES ('1','Centro','N','21.0.0','NO')"
+                                    "VALUES ('1','Centro','N','22.0.0','NO')"
                     );
                 }
 
@@ -346,16 +346,18 @@ public class Sincronizar implements Runnable {
                 ensureConfigKV(st, "hash_permisos", "");
                 ensureConfigKV(st, "sinc_max_evento", "0");
                 ensureConfigKV(st, "sinc_etapa", "1");
-                ensureConfigKV(st, "versionactualapp", "21.0.0");
-                ensureConfigKV(st, "versioninstalacion", "21.0.0");
+                ensureConfigKV(st, "versionactualapp", "22.0.0");
+                ensureConfigKV(st, "versioninstalacion", "22.0.0");
                 ensureConfigKV(st, "serieapp", wwclave);
                 ensureConfigKV(st, "mensaje1", " ");
                 ensureConfigKV(st, "imprimir_vales", "NO");
+                ensureConfigKV(st, "login_usuario", "Coorserpark");
+                ensureConfigKV(st, "login_clave",   "12735e56060d591b88d1fdc3c76b1bb3cc00a51c");
                 
 
                 st.executeUpdate(
                         "INSERT INTO sedes(id_sede,sede,backup,versionactualapp) " +
-                                "SELECT '1','Centro','N','21.0.0' " +
+                                "SELECT '1','Centro','N','22.0.0' " +
                                 "WHERE NOT EXISTS (SELECT 1 FROM sedes WHERE id_sede='1')"
                 );
 
@@ -1029,101 +1031,127 @@ public void sincroDescargaEventos(Statement statement) throws SQLException {
 
     
 /*********************************************************************************************************************/    
-    public void sincroEnviarEventos_backup(Statement st) throws SQLException {
-        System.out.println(" .....LLego a sincroEnviarEventos_backup");
+    public void sincroEnviarEventos_backup(Statement statement) throws SQLException {
 
-        // 1) Leer flags de backup de la sede actual
-        //   Corrige la consulta: une sedes_tmp con config.id_sede
-        HashMap<String, String> sedeCfg = Db.selectOne(
-            "SELECT s.backup, s.backup_ini, s.backup_ter " +
-            "FROM sedes_tmp s " +
-            "JOIN config c ON c.dato='id_sede' AND s.id_sede=c.valor " +
-            "LIMIT 1", st
-        );
+    System.out.println("..... LLego a sincroEnviarEventos_backup");
 
-        if (sedeCfg == null) {
-            System.out.println(" .....No se reciben datos de sedes_tmp / id_sede en config.......");
-            // no hay datos -> damos por terminada la etapa de backup
-            st.executeUpdate("UPDATE config SET valor=7 WHERE dato='sinc_etapa' AND valor<>0");
-            return;
+    HashMap<String, String> sedeCfg = Db.selectOne("SELECT s.backup, s.backup_ini, s.backup_ter FROM sedes_tmp s JOIN config c ON c.dato='id_sede' AND s.id_sede=c.valor LIMIT 1", statement);
+
+    if (sedeCfg == null) {
+        System.out.println("..... No se encontró configuración de backup.");
+        statement.executeUpdate("UPDATE config SET valor=7 WHERE dato='sinc_etapa' AND valor<>0");
+        return;
+    }
+
+    String backup = safe(sedeCfg.get("backup"), "N").trim();
+    String backupIni = safe(sedeCfg.get("backup_ini"), "").trim();
+    String backupTer = safe(sedeCfg.get("backup_ter"), "").trim();
+
+    System.out.println("backup.. " + backup);
+    System.out.println("backup_ini.. " + backupIni);
+    System.out.println("backup_ter.. " + backupTer);
+
+    if (!"S".equalsIgnoreCase(backup)) {
+        System.out.println("..... Backup desactivado.");
+        statement.executeUpdate("UPDATE config SET valor=7 WHERE dato='sinc_etapa' AND valor<>0");
+        return;
+    }
+
+    if (backupIni.isEmpty() || backupTer.isEmpty()) {
+        System.out.println("..... Fechas de backup incompletas.");
+        statement.executeUpdate("UPDATE config SET valor=7 WHERE dato='sinc_etapa' AND valor<>0");
+        return;
+    }
+
+    String selectSql = "SELECT * FROM eventos_sitio WHERE fecha >= '" + esc(backupIni) + " 00:00:00' AND fecha < datetime('" + esc(backupTer) + "', '+1 day') ORDER BY fecha";
+
+    System.out.println("..... Datos de eventos de backup..... " + selectSql);
+
+    java.util.List<java.util.HashMap<String, String>> eventos = Db.selectAll(selectSql, statement);
+
+    if (eventos == null || eventos.isEmpty()) {
+        System.out.println("..... No hay eventos para backup en el rango.");
+        statement.executeUpdate("UPDATE config SET valor=7 WHERE dato='sinc_etapa' AND valor<>0");
+        return;
+    }
+
+    int totalEventos = eventos.size();
+
+    System.out.println("..... Total eventos backup: " + totalEventos);
+
+    java.util.List<String> eventosFormateados = new java.util.ArrayList<>();
+
+    for (java.util.HashMap<String, String> evento : eventos) {
+
+        java.util.List<String> pares = new java.util.ArrayList<>();
+
+        for (java.util.Map.Entry<String, String> entry : evento.entrySet()) {
+
+            String clave = entry.getKey() == null ? "" : entry.getKey();
+            String valor = entry.getValue() == null ? "" : entry.getValue();
+
+            clave = clave.replace("---*---", "\\---\\*\\---").replace(":::::", "\\:::::").replace(";;;;;", "\\;;;;;");
+            valor = valor.replace("---*---", "\\---\\*\\---").replace(":::::", "\\:::::").replace(";;;;;", "\\;;;;;");
+
+            pares.add(clave + "---*---" + valor);
         }
 
-        final String wvalidarbackup = safe(sedeCfg.get("backup"), "N").trim();
-        final String wbackup_ini    = safe(sedeCfg.get("backup_ini"), "").trim();
-        final String wbackup_ter    = safe(sedeCfg.get("backup_ter"), "").trim();
+        eventosFormateados.add("[" + String.join(":::::", pares) + "]");
+    }
 
-        System.out.println("backup.. " + wvalidarbackup);
-        System.out.println("backup_ini.. " + wbackup_ini);
-        System.out.println("backup_ter.. " + wbackup_ter);
+    String dataCompleta = "[[" + String.join(";;;;;", eventosFormateados) + "]]";
 
-        // 2) Si la sede NO tiene backup activo, cerramos etapa y salimos
-        if (!"S".equalsIgnoreCase(wvalidarbackup)) {
-            st.executeUpdate("UPDATE config SET valor=7 WHERE dato='sinc_etapa' AND valor<>0");
-            System.out.println(" .....Backup desactivado para esta sede. Nada que enviar.");
-            return;
-        }
+    HashMap<String, String> idSedeObj = Db.selectOne("SELECT valor FROM config WHERE dato='id_sede'", statement);
+    String idSede = idSedeObj != null && idSedeObj.get("valor") != null && !idSedeObj.get("valor").trim().isEmpty() ? idSedeObj.get("valor").trim() : "1";
 
-        // 3) Armar sentencia: por rango si hay fechas; si no, todo
-        String wsentencia;
-        if (!wbackup_ini.isEmpty() && !wbackup_ter.isEmpty()) {
-            // Asumiendo formato 'YYYY-MM-DD HH:mm:ss' en fecha (o compatible con BETWEEN)
-            wsentencia = "SELECT * FROM eventos_sitio " +
-                         "WHERE fecha BETWEEN '" + esc(wbackup_ini) + "' AND '" + esc(wbackup_ter) + "' " +
-                         "ORDER BY fecha";
-        } else {
-            wsentencia = "SELECT * FROM eventos_sitio ORDER BY fecha";
-        }
+    HashMap<String, String> parametros = new HashMap<>();
+    parametros.put("info", dataCompleta);
+    parametros.put("id_sede", idSede);
 
-        System.out.println(" .....Datos de eventos de backup......." + wsentencia);
+    System.out.println("..... Enviando todos los eventos de backup en una sola petición.");
+    System.out.println("..... Total eventos enviados: " + totalEventos);
+    System.out.println("..... Longitud campo info: " + dataCompleta.length());
 
-        java.util.ArrayList<HashMap<String, String>> eventos = Db.selectAll(wsentencia, st);
+    JSONTask t3 = new JSONTask("setEventos_backup", parametros);
 
-        if (eventos == null || eventos.isEmpty()) {
-            // No hay nada que enviar, cerramos etapa
-            st.executeUpdate("UPDATE config SET valor=7 WHERE dato='sinc_etapa' AND valor<>0");
-            System.out.println(" .....No hay eventos para backup en el rango.");
-            return;
-        }
+    boolean envioExitoso = false;
 
-        // 4) Serializar como lo haces (col---*---valor) unidos por ':::::' y filas por ';;;;;'
-        java.util.ArrayList<String> filasSerializadas = new java.util.ArrayList<>();
-        for (HashMap<String, String> evento : eventos) {
-            java.util.ArrayList<String> cols = new java.util.ArrayList<>();
-            // NO borres del mapa mientras iteras; recorre sus entries
-            for (java.util.Map.Entry<String, String> e : evento.entrySet()) {
-                String k = safe(e.getKey(), "");
-                String v = safe(e.getValue(), "");
-                cols.add(k + "---*---" + v);
-            }
-            // Unir columnas de la fila
-            String fila = String.join(":::::", cols);
-            filasSerializadas.add(fila);
-        }
-        // Unir todas las filas
-        String data_aux = String.join(";;;;;", filasSerializadas);
+    try {
+        envioExitoso = t3.enviar(false, null);
+        System.out.println("..... Resultado JSONTask backup: " + envioExitoso);
+        System.out.println("..... Respuesta JSONTask backup: " + t3.respuesta);
+    } catch (Exception e) {
+        System.err.println("..... EXCEPCION REAL BACKUP: " + e.toString());
+        e.printStackTrace();
+        envioExitoso = false;
+    }
 
-        HashMap<String, String> parametros3 = new HashMap<>();
-        parametros3.put("info", data_aux);
+    if (!envioExitoso) {
+        System.err.println("..... Error enviando eventos de backup.");
+        wsinconexion = 1;
+        statement.executeUpdate("UPDATE config SET valor=0 WHERE dato='sinc_etapa'");
+        wjson += " - Backup Envio Eventos";
+        return;
+    }
 
-        // 5) Adjuntar id_sede
-        HashMap<String, String> idSede = Db.selectOne("SELECT valor FROM config WHERE dato='id_sede'", st);
-        parametros3.put("id_sede", idSede != null ? safe(idSede.get("valor"), "1") : "1");
+    if (t3.respuesta != null && t3.respuesta.get("exito") != null) {
 
-        // 6) Enviar al WS correcto que indicaste
-        JSONTask t3 = new JSONTask("setEventos_backup", parametros3);
-        System.out.println(" .....Enviando eventos para Backup ....." + parametros3.size() + " filas");
+        String exitoWs = t3.respuesta.get("exito").trim();
 
-        if (t3.enviar(false, this)) {
-            System.out.println(" .....Backup OK en servidor principal.");
-            st.executeUpdate("UPDATE config SET valor=7 WHERE dato='sinc_etapa' AND valor<>0");
-        } else {
-            // Manejo de error coherente con el resto del flujo
+        System.out.println("..... exito recibido del WebService: " + exitoWs);
+
+        if (!"1".equals(exitoWs)) {
+            System.err.println("..... El WebService respondió exito=0.");
             wsinconexion = 1;
-            wjson += " - Backup Envio Eventos";
-            st.executeUpdate("UPDATE config SET valor=0 WHERE dato='sinc_etapa'");
-            // wsError(t3, "EventosBackup", st); // Si quieres mostrar exactamente el error HTTP/404
+            statement.executeUpdate("UPDATE config SET valor=0 WHERE dato='sinc_etapa'");
+            wjson += " - Backup WebService exito=0";
+            return;
         }
     }
+
+    System.out.println("..... Backup finalizado correctamente. " + totalEventos + " eventos enviados.");
+    statement.executeUpdate("UPDATE config SET valor=7 WHERE dato='sinc_etapa' AND valor<>0");
+}
 /******************************************************************************************************************************/
 
     public void sincroActividad_version(Statement st, String accion) throws SQLException, UnknownHostException {

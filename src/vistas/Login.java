@@ -84,7 +84,7 @@ public class Login extends JFrame implements java.awt.event.WindowListener {
 
         jLabel3 = new JLabel("Autenticación");
         jLabel3.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        jLabel3.setForeground(new Color(0xA0, 0xAE, 0xC4));
+        jLabel3.setForeground(Color.WHITE);
         bar.add(jLabel3, BorderLayout.EAST);
 
         return bar;
@@ -189,9 +189,17 @@ public class Login extends JFrame implements java.awt.event.WindowListener {
 
     // ── Footer ────────────────────────────────────────────────────────────────
     private JPanel buildFooter() {
-        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        JPanel footer = new JPanel(new BorderLayout());
         footer.setOpaque(false);
         footer.setBorder(BorderFactory.createEmptyBorder(0, 20, 6, 20));
+
+        JLabel lblSolutic = new JLabel("@ Solutic 3E | Transformando Ideas");
+        lblSolutic.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        lblSolutic.setForeground(TXT_PRI);
+        footer.add(lblSolutic, BorderLayout.WEST);
+
+        JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        btns.setOpaque(false);
 
         btnIngresar = new JButton("Ingresar") {
             @Override protected void paintComponent(Graphics g) {
@@ -211,7 +219,8 @@ public class Login extends JFrame implements java.awt.event.WindowListener {
         btnIngresar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnIngresar.setBorder(BorderFactory.createEmptyBorder(8, 28, 8, 28));
         btnIngresar.addActionListener(e -> loginModel.ingresar());
-        footer.add(btnIngresar);
+        btns.add(btnIngresar);
+        footer.add(btns, BorderLayout.EAST);
 
         return footer;
     }
@@ -232,8 +241,8 @@ public class Login extends JFrame implements java.awt.event.WindowListener {
 
     private JLabel makeLabel(String text) {
         JLabel l = new JLabel(text);
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 10));
-        l.setForeground(TXT_MUT);
+        l.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        l.setForeground(TXT_PRI);
         return l;
     }
 

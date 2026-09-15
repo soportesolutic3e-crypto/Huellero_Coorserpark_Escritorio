@@ -116,30 +116,39 @@ public class Inicio extends JFrame {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                java.awt.LinearGradientPaint grad = new java.awt.LinearGradientPaint(
+                    0, 0, getWidth(), getHeight(),
+                    new float[]{0f, 1f},
+                    new Color[]{new Color(0x60, 0xA5, 0xFA), Color.WHITE}
+                );
+                g2.setPaint(grad);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
                 g2.setColor(NAVY_DARK);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                g2.fillRoundRect(2, 2, getWidth()-4, getHeight()-4, 10, 10);
                 g2.dispose();
             }
         };
         clockBox.setOpaque(false);
-        clockBox.setBorder(BorderFactory.createEmptyBorder(4, 16, 4, 16));
+        clockBox.setBorder(BorderFactory.createEmptyBorder(4, 18, 4, 18));
 
         GridBagConstraints cg = new GridBagConstraints();
         cg.gridx = 0; cg.gridy = 0; cg.anchor = GridBagConstraints.CENTER;
         lbldiahora = new JLabel("00:00:00");
-        lbldiahora.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lbldiahora.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lbldiahora.setForeground(Color.WHITE);
         clockBox.add(lbldiahora, cg);
 
         cg.gridy = 1;
         lblFecha = new JLabel("...");
-        lblFecha.setFont(new Font("Segoe UI", Font.PLAIN, 10));
-        lblFecha.setForeground(new Color(0x64, 0x74, 0x8B));
+        lblFecha.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblFecha.setForeground(Color.WHITE);
         clockBox.add(lblFecha, cg);
 
-        JPanel rightWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT, 14, 0));
+        JPanel rightWrap = new JPanel(new GridBagLayout());
         rightWrap.setOpaque(false);
-        rightWrap.add(clockBox);
+        GridBagConstraints rw = new GridBagConstraints();
+        rw.insets = new java.awt.Insets(0, 0, 0, 14);
+        rightWrap.add(clockBox, rw);
         bar.add(rightWrap, BorderLayout.EAST);
 
         return bar;
@@ -199,8 +208,8 @@ public class Inicio extends JFrame {
 
         // Mensaje dinámico (actualizado por inicioMensaje)
         versincronizacion = new JLabel("Por favor espere un momento...");
-        versincronizacion.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        versincronizacion.setForeground(TXT_MUT);
+        versincronizacion.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        versincronizacion.setForeground(NAVY);
         g.gridy = 2; g.insets = new Insets(0, 0, 22, 0);
         panel.add(versincronizacion, g);
 
@@ -232,14 +241,14 @@ public class Inicio extends JFrame {
         sg.gridx = 0; sg.gridy = 0; sg.anchor = GridBagConstraints.CENTER;
 
         JLabel lblSedeLabel = new JLabel("Sede activa");
-        lblSedeLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        lblSedeLabel.setForeground(TXT_MUT);
+        lblSedeLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblSedeLabel.setForeground(NAVY);
         sedePanel.add(lblSedeLabel, sg);
 
         sg.gridy = 1;
         lblSede = new JLabel(detallesede.isEmpty() ? "—" : detallesede);
-        lblSede.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        lblSede.setForeground(NAVY);
+        lblSede.setFont(new Font("Segoe UI", Font.BOLD, 17));
+        lblSede.setForeground(NAVY_DARK);
         sedePanel.add(lblSede, sg);
         panel.add(sedePanel, BorderLayout.NORTH);
 
@@ -265,8 +274,8 @@ public class Inicio extends JFrame {
                 super.paintComponent(g);
             }
         };
-        btnConfigurar.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        btnConfigurar.setForeground(new Color(0xCC, 0xD5, 0xE0));
+        btnConfigurar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnConfigurar.setForeground(Color.WHITE);
         btnConfigurar.setContentAreaFilled(false);
         btnConfigurar.setBorderPainted(false);
         btnConfigurar.setFocusPainted(false);
@@ -310,14 +319,14 @@ public class Inicio extends JFrame {
         card.add(lblIconIngreso, g);
 
         lblIndentificaion = new JLabel("Registro");
-        lblIndentificaion.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblIndentificaion.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblIndentificaion.setForeground(Color.WHITE);
         g.gridy = 1; g.insets = new Insets(0, 0, 5, 0);
         card.add(lblIndentificaion, g);
 
         JLabel sub = new JLabel("Huella / Tarjeta RFID");
-        sub.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        sub.setForeground(new Color(0x7B, 0x93, 0xBF));
+        sub.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        sub.setForeground(Color.WHITE);
         g.gridy = 2; g.insets = new Insets(0, 0, 0, 0);
         card.add(sub, g);
 
@@ -353,14 +362,14 @@ public class Inicio extends JFrame {
         card.add(lblIconRegistro, g);
 
         lblRegistro = new JLabel("Enrolamiento");
-        lblRegistro.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblRegistro.setForeground(NAVY);
+        lblRegistro.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblRegistro.setForeground(NAVY_DARK);
         g.gridy = 1; g.insets = new Insets(0, 0, 5, 0);
         card.add(lblRegistro, g);
 
         JLabel sub = new JLabel("Nuevo empleado");
-        sub.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        sub.setForeground(TXT_MUT);
+        sub.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        sub.setForeground(NAVY);
         g.gridy = 2; g.insets = new Insets(0, 0, 0, 0);
         card.add(sub, g);
 
@@ -386,12 +395,12 @@ public class Inicio extends JFrame {
         bar.setBorder(BorderFactory.createEmptyBorder(0, 16, 0, 16));
 
         jLabel3 = new JLabel("@ SOLUTIC 3E SAS");
-        jLabel3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        jLabel3.setForeground(new Color(0xCC, 0xD5, 0xE0));
+        jLabel3.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        jLabel3.setForeground(Color.WHITE);
 
-        jLabel1 = new JLabel("Ver 21.0 · 25032026");
-        jLabel1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        jLabel1.setForeground(new Color(0x64, 0x74, 0x8B));
+        jLabel1 = new JLabel("Ver 22.0 · 25032026");
+        jLabel1.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        jLabel1.setForeground(Color.WHITE);
 
         bar.add(jLabel3, BorderLayout.WEST);
         bar.add(jLabel1, BorderLayout.EAST);
@@ -462,7 +471,17 @@ public class Inicio extends JFrame {
     }
 
     // ── Handlers de eventos ───────────────────────────────────────────────────
+    private boolean licenciaActiva() {
+        process.LicenciaManager.Resultado r = process.LicenciaManager.verificarServidor();
+        if (!r.ok) {
+            new process.LicenciaErrorDialog(r).setVisible(true);
+            return false;
+        }
+        return true;
+    }
+
     private void lblIconRegistroMouseClicked(MouseEvent evt) {
+        if (!licenciaActiva()) return;
         Login lo = new Login(this);
         lo.setIconImage(new javax.swing.ImageIcon(Inicio.class.getResource("icon_frame.png")).getImage());
         lo.setVisible(true);
@@ -474,6 +493,7 @@ public class Inicio extends JFrame {
         isProcessingClick = true;
         wformaregistropersonaini = "T";
         try {
+            if (!licenciaActiva()) return;
             if (ingresoTarjeta != null && ingresoTarjeta.isVisible()) {
                 ingresoTarjeta.toFront(); ingresoTarjeta.requestFocus(); return;
             }
@@ -490,6 +510,7 @@ public class Inicio extends JFrame {
         isProcessingClick = true;
         wformaregistropersonaini = "T";
         try {
+            if (!licenciaActiva()) return;
             if (ingresoTarjeta != null && ingresoTarjeta.isVisible()) {
                 ingresoTarjeta.toFront(); ingresoTarjeta.requestFocus(); return;
             }
@@ -502,10 +523,7 @@ public class Inicio extends JFrame {
     }
 
     private void btnConfigurarActionPerformed() {
-        Configurar i = new Configurar(this);
-        i.setIconImage(new javax.swing.ImageIcon(Inicio.class.getResource("icon_frame.png")).getImage());
-        this.setVisible(false);
-        i.setVisible(true);
+        new LoginConfiguracion(this);
     }
 
     // ── API pública requerida por Sincronizar y ControlIngreso ────────────────

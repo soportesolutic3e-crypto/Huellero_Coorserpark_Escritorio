@@ -175,8 +175,8 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
 
         gc.gridy = 1;
         lblMensajex = new JLabel(" ");
-        lblMensajex.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        lblMensajex.setForeground(new Color(0xA0, 0xAE, 0xC4));
+        lblMensajex.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblMensajex.setForeground(Color.WHITE);
         center.add(lblMensajex, gc);
         bar.add(center, BorderLayout.CENTER);
 
@@ -185,8 +185,17 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                // Borde degradado azul claro → blanco
+                java.awt.LinearGradientPaint grad = new java.awt.LinearGradientPaint(
+                    0, 0, getWidth(), getHeight(),
+                    new float[]{0f, 1f},
+                    new Color[]{new Color(0x60, 0xA5, 0xFA), Color.WHITE}
+                );
+                g2.setPaint(grad);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                // Fondo interior navy
                 g2.setColor(NAVY_DARK);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                g2.fillRoundRect(2, 2, getWidth()-4, getHeight()-4, 10, 10);
                 g2.dispose();
             }
         };
@@ -202,13 +211,15 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
 
         cg.gridy = 1;
         lblFechaTopbar = new JLabel("...");
-        lblFechaTopbar.setFont(new Font("Segoe UI", Font.PLAIN, 10));
-        lblFechaTopbar.setForeground(new Color(0x64, 0x74, 0x8B));
+        lblFechaTopbar.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblFechaTopbar.setForeground(Color.WHITE);
         clockBox.add(lblFechaTopbar, cg);
 
-        JPanel rightWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT, 14, 0));
+        JPanel rightWrap = new JPanel(new GridBagLayout());
         rightWrap.setOpaque(false);
-        rightWrap.add(clockBox);
+        GridBagConstraints rw = new GridBagConstraints();
+        rw.insets = new java.awt.Insets(0, 0, 0, 14);
+        rightWrap.add(clockBox, rw);
         bar.add(rightWrap, BorderLayout.EAST);
 
         return bar;
@@ -278,8 +289,8 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
         lblVerificado.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         lblccSmall = new JLabel(" ");
-        lblccSmall.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        lblccSmall.setForeground(new Color(0x60, 0x72, 0x8A));
+        lblccSmall.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblccSmall.setForeground(Color.WHITE);
         lblccSmall.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         idCard.add(Box.createVerticalStrut(2));
@@ -296,8 +307,8 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
         huellaCard.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JLabel huellaTitle = new JLabel("HUELLA CAPTURADA");
-        huellaTitle.setFont(new Font("Segoe UI", Font.PLAIN, 9));
-        huellaTitle.setForeground(TXT_MUT);
+        huellaTitle.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        huellaTitle.setForeground(TXT_PRI);
         huellaTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         lblHuella = new JLabel() {
@@ -326,7 +337,7 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
         txtArea.setEditable(false);
         txtArea.setFont(new Font("Segoe UI", Font.PLAIN, 10));
         txtArea.setBackground(BG_FIELD);
-        txtArea.setForeground(TXT_MUT);
+        txtArea.setForeground(TXT_PRI);
         txtArea.setBorder(null);
         txtArea.setLineWrap(true);
         txtArea.setWrapStyleWord(true);
@@ -343,10 +354,10 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
         huellaCard.add(Box.createVerticalStrut(6));
         huellaCard.add(jScrollPane1);
 
+        huellaCard.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         col.add(idCard);
         col.add(Box.createVerticalStrut(8));
         col.add(huellaCard);
-        col.add(Box.createVerticalGlue());
 
         return col;
     }
@@ -547,12 +558,12 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
         bar.setOpaque(false);
         bar.setBorder(BorderFactory.createEmptyBorder(7, 16, 7, 16));
 
-        jLabel1 = new JLabel("@SOLUTIC 3E SAS (Ver 21.0&25032026)");
-        jLabel1.setFont(new Font("Segoe UI", Font.PLAIN, 10));
-        jLabel1.setForeground(new Color(0xCC, 0xD5, 0xE0));
+        jLabel1 = new JLabel("@SOLUTIC 3E SAS (Ver 22.0&25032026)");
+        jLabel1.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        jLabel1.setForeground(Color.WHITE);
 
         verestadoconexion = new JLabel(" ");
-        verestadoconexion.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        verestadoconexion.setFont(new Font("Segoe UI", Font.BOLD, 18));
         verestadoconexion.setForeground(new Color(0xFA, 0xCC, 0x15));
         verestadoconexion.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -560,21 +571,27 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(getModel().isPressed()
-                    ? new Color(0x1E, 0x40, 0xAF)
-                    : getModel().isRollover()
-                        ? new Color(0x2D, 0x4E, 0xC8) : NAVY_MID);
+                g2.setColor(getModel().isRollover() ? Color.WHITE : NAVY_MID);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
                 g2.dispose();
+                setForeground(getModel().isRollover() ? NAVY : Color.WHITE);
                 super.paintComponent(g);
             }
+            @Override protected void paintBorder(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(Color.WHITE);
+                g2.setStroke(new BasicStroke(1.5f));
+                g2.drawRoundRect(1, 1, getWidth()-3, getHeight()-3, 8, 8);
+                g2.dispose();
+            }
         };
-        btnSincronizar.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        btnSincronizar.setForeground(new Color(0xCB, 0xD5, 0xE1));
+        btnSincronizar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnSincronizar.setForeground(Color.WHITE);
         btnSincronizar.setContentAreaFilled(false);
         btnSincronizar.setBorderPainted(false);
         btnSincronizar.setFocusPainted(false);
-        btnSincronizar.setBorder(BorderFactory.createEmptyBorder(5, 14, 5, 14));
+        btnSincronizar.setBorder(BorderFactory.createEmptyBorder(6, 18, 6, 18));
         btnSincronizar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnSincronizar.addActionListener(e -> onSincronizar());
 
@@ -647,14 +664,14 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
 
     private JLabel makeLabel(String text) {
         JLabel l = new JLabel(text);
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 10));
-        l.setForeground(TXT_MUT);
+        l.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        l.setForeground(TXT_PRI);
         return l;
     }
 
     private JLabel sectionTitle(String text) {
         JLabel l = new JLabel(text);
-        l.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        l.setFont(new Font("Segoe UI", Font.BOLD, 16));
         l.setForeground(NAVY);
         return l;
     }
@@ -688,7 +705,7 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(BG_FIELD);
+                g2.setColor(BG_BLUE);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 7, 7);
                 g2.dispose();
                 super.paintComponent(g);
@@ -696,7 +713,7 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
         };
         f.setFont(new Font("Segoe UI", Font.BOLD, 12));
         f.setForeground(TXT_PRI);
-        f.setBackground(BG_FIELD);
+        f.setBackground(BG_BLUE);
         f.setOpaque(false);
         f.setEditable(false);
         f.setPreferredSize(new Dimension(100, 28));
@@ -774,6 +791,11 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
     }
 
     private void onSincronizar() {
+        process.LicenciaManager.Resultado lic = process.LicenciaManager.verificarServidor();
+        if (!lic.ok) {
+            new process.LicenciaErrorDialog(lic).setVisible(true);
+            return;
+        }
         if (ramupdate != null && ramupdate.getState() != Thread.State.RUNNABLE) {
             Sincronizar.registroaccion = "SINCRONIZACION MANUAL";
             ramupdate = new Thread(this);
@@ -906,6 +928,7 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
             Image img = icon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
             lblEstadoVale.setIcon(new ImageIcon(img));
         } catch (Exception e) { lblEstadoVale.setIcon(null); }
+        lblfecha.setText(activo ? "Impresión de vales activa" : "Impresión de vales desactivada");
     }
 
     // ── Getters / Setters ─────────────────────────────────────────────────────

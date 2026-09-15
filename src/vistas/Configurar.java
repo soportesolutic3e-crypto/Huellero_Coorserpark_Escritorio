@@ -83,7 +83,7 @@ public class Configurar extends JFrame implements java.awt.event.WindowListener 
 
         jLabel2 = new JLabel("Configurar");
         jLabel2.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        jLabel2.setForeground(new Color(0xA0, 0xAE, 0xC4));
+        jLabel2.setForeground(Color.WHITE);
         bar.add(jLabel2, BorderLayout.EAST);
 
         return bar;
@@ -188,9 +188,17 @@ public class Configurar extends JFrame implements java.awt.event.WindowListener 
 
     // ── Footer con botones ────────────────────────────────────────────────────
     private JPanel buildFooter() {
-        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        JPanel footer = new JPanel(new BorderLayout());
         footer.setOpaque(false);
         footer.setBorder(BorderFactory.createEmptyBorder(0, 20, 6, 20));
+
+        JLabel lblSolutic = new JLabel("@ Solutic 3E | Transformando Ideas");
+        lblSolutic.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        lblSolutic.setForeground(TXT_PRI);
+        footer.add(lblSolutic, BorderLayout.WEST);
+
+        JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        btns.setOpaque(false);
 
         btnCancelar = new JButton("Cancelar") {
             @Override protected void paintComponent(Graphics g) {
@@ -205,7 +213,7 @@ public class Configurar extends JFrame implements java.awt.event.WindowListener 
                 super.paintComponent(g);
             }
         };
-        btnCancelar.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnCancelar.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnCancelar.setForeground(TXT_PRI);
         btnCancelar.setContentAreaFilled(false);
         btnCancelar.setBorderPainted(false);
@@ -213,7 +221,7 @@ public class Configurar extends JFrame implements java.awt.event.WindowListener 
         btnCancelar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnCancelar.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
         btnCancelar.addActionListener(e -> btnCancelarActionPerformed());
-        footer.add(btnCancelar);
+        btns.add(btnCancelar);
 
         btnGuardar = new JButton("Guardar") {
             @Override protected void paintComponent(Graphics g) {
@@ -233,7 +241,8 @@ public class Configurar extends JFrame implements java.awt.event.WindowListener 
         btnGuardar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnGuardar.setBorder(BorderFactory.createEmptyBorder(8, 24, 8, 24));
         btnGuardar.addActionListener(e -> btnGuardarActionPerformed());
-        footer.add(btnGuardar);
+        btns.add(btnGuardar);
+        footer.add(btns, BorderLayout.EAST);
 
         return footer;
     }
@@ -254,8 +263,8 @@ public class Configurar extends JFrame implements java.awt.event.WindowListener 
 
     private JLabel makeLabel(String text) {
         JLabel l = new JLabel(text);
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 10));
-        l.setForeground(TXT_MUT);
+        l.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        l.setForeground(TXT_PRI);
         return l;
     }
 

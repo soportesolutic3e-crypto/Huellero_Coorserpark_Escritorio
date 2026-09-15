@@ -82,7 +82,7 @@
          Genera dist/ControlSolutic-obf.jar (listo para distribuir)
     ════════════════════════════════════════════════════════════════ -->
     <target name="-post-jar">
-        <java jar="D:/Programas_Desarrollo_General/Huellero_VERSION21/Librerias/proguard.jar"
+        <java jar="D:/Programas_Desarrollo_General/Huellero_VERSION22/Librerias/proguard.jar"
               fork="true" failonerror="true" dir="${basedir}">
             <arg value="@proguard.cfg"/>
             <jvmarg value="-Xmx512m"/>

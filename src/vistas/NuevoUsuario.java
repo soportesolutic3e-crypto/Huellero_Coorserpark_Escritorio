@@ -445,10 +445,21 @@ public class NuevoUsuario extends javax.swing.JFrame implements WindowListener {
         footer.setOpaque(false);
         footer.setBorder(BorderFactory.createEmptyBorder(4, 18, 14, 18));
 
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new java.awt.GridLayout(2, 1));
+        infoPanel.setOpaque(false);
+
         lblContador = new JLabel("0 huellas registradas · 10 vacías");
         lblContador.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         lblContador.setForeground(TXT_MUT);
-        footer.add(lblContador, BorderLayout.WEST);
+        infoPanel.add(lblContador);
+
+        JLabel lblSolutic = new JLabel("@ Solutic 3E | Transformando Ideas");
+        lblSolutic.setFont(new Font("Segoe UI", Font.PLAIN, 10));
+        lblSolutic.setForeground(TXT_MUT);
+        infoPanel.add(lblSolutic);
+
+        footer.add(infoPanel, BorderLayout.WEST);
 
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         btns.setOpaque(false);
