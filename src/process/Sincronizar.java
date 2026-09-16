@@ -100,10 +100,17 @@ public class Sincronizar implements Runnable {
                 wsinconexion = 0;
                 if (inicio != null) ui(() -> inicio.inicioMensaje("*** Sincronizando, Por favor esperar ***"));
 
-                try (Connection cn = java.sql.DriverManager.getConnection(url)) {
+                /* try (Connection cn = java.sql.DriverManager.getConnection(url)) {
+                    cn.setAutoCommit(false);
+                    try (Statement st = cn.createStatement()) {
+                        st.setQueryTimeout(30); */
+                
+                /*NUEVO V23-15-09-2026*/
+                 try (Connection cn = java.sql.DriverManager.getConnection(url)) {
                     cn.setAutoCommit(false);
                     try (Statement st = cn.createStatement()) {
                         st.setQueryTimeout(30);
+                        st.execute("PRAGMA busy_timeout=5000");
 
                         // --- pipeline de sincronización automática ---
                         sincroInicio(st);                          cn.commit();
@@ -169,10 +176,17 @@ public class Sincronizar implements Runnable {
         wwsinconexion = 0;
         wsino_red = "SI";
 
+        /*try (Connection cn = java.sql.DriverManager.getConnection(url)) {
+            cn.setAutoCommit(false);
+            try (Statement st = cn.createStatement()) {
+                st.setQueryTimeout(30);*/
+        
+        /*NUEVO V23-15-09-2026*/
         try (Connection cn = java.sql.DriverManager.getConnection(url)) {
             cn.setAutoCommit(false);
             try (Statement st = cn.createStatement()) {
                 st.setQueryTimeout(30);
+                st.execute("PRAGMA busy_timeout=5000");
 
                 // --- pipeline de sincronización manual ---
                 
@@ -239,10 +253,17 @@ public class Sincronizar implements Runnable {
             System.out.println(e.getMessage());
         }
 
+        /*try (Connection cn = java.sql.DriverManager.getConnection(url)) {
+            cn.setAutoCommit(false);
+            try (Statement st = cn.createStatement()) {
+                st.setQueryTimeout(30);*/
+        
+        /*NUEVO V23-15-09-2026*/
         try (Connection cn = java.sql.DriverManager.getConnection(url)) {
             cn.setAutoCommit(false);
             try (Statement st = cn.createStatement()) {
                 st.setQueryTimeout(30);
+                st.execute("PRAGMA busy_timeout=5000");
 
                 ensureTable(cn, st, "empleado",
                         "CREATE TABLE empleado(" +

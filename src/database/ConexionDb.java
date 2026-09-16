@@ -38,12 +38,24 @@ public class ConexionDb implements AutoCloseable {
     }
 
     /** Abre conexión y statement (timeout 30s). */
+    /***METODO ANTERIOR **
     public void Conectar() throws SQLException {
         String url = "jdbc:sqlite:" + dbPath.toString();
         this.connection = DriverManager.getConnection(url);
         this.connection.setAutoCommit(true);
         this.statement = this.connection.createStatement();
         this.statement.setQueryTimeout(30);
+    }
+    */
+    /*METODO CONECTAR VERSION V23-15-09-2026*/
+        /** Abre conexión y statement (timeout 30s). */
+    public void Conectar() throws SQLException {
+        String url = "jdbc:sqlite:" + dbPath.toString();
+        this.connection = DriverManager.getConnection(url);
+        this.connection.setAutoCommit(true);
+        this.statement = this.connection.createStatement();
+        this.statement.setQueryTimeout(30);
+        this.statement.execute("PRAGMA busy_timeout=5000");
     }
 
     /** Getter (por si en otro punto prefieres no acceder directo al campo). */

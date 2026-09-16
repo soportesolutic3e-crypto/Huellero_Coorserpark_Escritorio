@@ -520,7 +520,9 @@ mensaje_vale = "Llegada tarde - Retención de Vale - Límite: " + horaPermitidaS
            // -----------------------------------------------------
            // 2. Ejecución del WebService
            // -----------------------------------------------------
-           JSONTask t = new JSONTask("validarVale", parametros);
+           // JSONTask t = new JSONTask("validarVale", parametros); /*VERSION V21 ORIGINAL*/
+           
+           JSONTask t = new JSONTask("validarVale", parametros, true); // V23-15-09-2026
            boolean ok = t.enviar(false, this);
 
            // -----------------------------------------------------
@@ -2023,7 +2025,8 @@ private void registrarEventoImpresion() {
            /* =====================================================
               4. ENVIAR AL SERVIDOR CENTRAL
            ===================================================== */
-           JSONTask t = new JSONTask("setEventos_jhcm_ht", parametros);
+           //JSONTask t = new JSONTask("setEventos_jhcm_ht", parametros); /*VERSION V21 ORIGINAL*/
+                      JSONTask t = new JSONTask("setEventos_jhcm_ht", parametros, true); //V23 15-09-2026
            boolean envioExitoso = t.enviar(false, null);
 
            /* =====================================================

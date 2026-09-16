@@ -558,7 +558,8 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
         bar.setOpaque(false);
         bar.setBorder(BorderFactory.createEmptyBorder(7, 16, 7, 16));
 
-        jLabel1 = new JLabel("@SOLUTIC 3E SAS (Ver 22.0&25032026)");
+        //jLabel1 = new JLabel("@SOLUTIC 3E SAS (Ver 22.0&25032026)");
+        jLabel1 = new JLabel("@SOLUTIC 3E SAS (Ver 23.0&15092026)");
         jLabel1.setFont(new Font("Segoe UI", Font.BOLD, 11));
         jLabel1.setForeground(Color.WHITE);
 
@@ -775,7 +776,8 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
         lblAvatar.repaint();
     }
 
-    // ── RFID ──────────────────────────────────────────────────────────────────
+    // ── RFID ANTERIOR V21 ──────────────────────────────────────────────────────────────────
+    /*
     private void onRFID() {
         if (procesandoLecturaTarjeta) return;
         procesandoLecturaTarjeta = true;
@@ -789,8 +791,32 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
             procesandoLecturaTarjeta = false;
         }
     }
+    */
+    
+    /* VERSION V23 15-09-2026 */
+    private void onRFID() {
+        if (procesandoLecturaTarjeta) return;
+        procesandoLecturaTarjeta = true;
 
-    private void onSincronizar() {
+        // Se saca de la interfaz para que un WebService lento (o el failover
+        // probando la ruta alterna) nunca congele la ventana durante el swipe.
+        new Thread(() -> {
+            try {
+                ingresoModelTarjeta.validarTarjeta();
+            } catch (SQLException ex) {
+                Logger.getLogger(IngresoTarjeta.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                SwingUtilities.invokeLater(() -> {
+                    nrotarje.setText("");
+                    nrotarje.requestFocusInWindow();
+                    procesandoLecturaTarjeta = false;
+                });
+            }
+        }, "ValidarTarjeta-Thread").start();
+    }
+
+    /******** VERSION V21 ANTERIOR ORIGINAL *********/
+    /*private void onSincronizar() {
         process.LicenciaManager.Resultado lic = process.LicenciaManager.verificarServidor();
         if (!lic.ok) {
             new process.LicenciaErrorDialog(lic).setVisible(true);
@@ -802,6 +828,28 @@ public class IngresoTarjeta extends JFrame implements WindowListener, Runnable {
             ramupdate.start();
             nrotarje.requestFocus();
         }
+    }*/
+    
+    /*VERSION V23 15-09-2026*/
+        private void onSincronizar() {
+        // La verificación de licencia (llamada de red) se saca de la interfaz;
+        // el resto de la lógica queda exactamente igual, solo que se resuelve
+        // cuando la respuesta llegue, en vez de congelar el botón mientras espera.
+        new Thread(() -> {
+            process.LicenciaManager.Resultado lic = process.LicenciaManager.verificarServidor();
+            SwingUtilities.invokeLater(() -> {
+                if (!lic.ok) {
+                    new process.LicenciaErrorDialog(lic).setVisible(true);
+                    return;
+                }
+                if (ramupdate != null && ramupdate.getState() != Thread.State.RUNNABLE) {
+                    Sincronizar.registroaccion = "SINCRONIZACION MANUAL";
+                    ramupdate = new Thread(this);
+                    ramupdate.start();
+                    nrotarje.requestFocus();
+                }
+            });
+        }, "VerificarLicencia-Thread").start();
     }
 
     // ── Cierre ────────────────────────────────────────────────────────────────
