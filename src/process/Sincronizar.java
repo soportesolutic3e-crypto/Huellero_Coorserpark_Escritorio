@@ -62,7 +62,7 @@ public class Sincronizar implements Runnable {
      public static final AtomicBoolean lockEnvioEventos = new AtomicBoolean(false);
 
 
-    private String wqueversion = "22.0.0";
+    private String wqueversion = "23.0.0";
     private String wwclave = "";
 
     public String wsino_red = "";
@@ -334,7 +334,7 @@ public class Sincronizar implements Runnable {
                     ); 
                     st.executeUpdate(
                             "INSERT INTO sedes_tmp(id_sede,sede,backup,versionactualapp,imprimir_vales) " +
-                                    "VALUES ('1','Centro','N','22.0.0','NO')"
+                                    "VALUES ('1','Centro','N','23.0.0','NO')"
                     );
                 }
 
@@ -367,8 +367,8 @@ public class Sincronizar implements Runnable {
                 ensureConfigKV(st, "hash_permisos", "");
                 ensureConfigKV(st, "sinc_max_evento", "0");
                 ensureConfigKV(st, "sinc_etapa", "1");
-                ensureConfigKV(st, "versionactualapp", "22.0.0");
-                ensureConfigKV(st, "versioninstalacion", "22.0.0");
+                ensureConfigKV(st, "versionactualapp", "23.0.0");
+                ensureConfigKV(st, "versioninstalacion", "23.0.0");
                 ensureConfigKV(st, "serieapp", wwclave);
                 ensureConfigKV(st, "mensaje1", " ");
                 ensureConfigKV(st, "imprimir_vales", "NO");
@@ -378,7 +378,7 @@ public class Sincronizar implements Runnable {
 
                 st.executeUpdate(
                         "INSERT INTO sedes(id_sede,sede,backup,versionactualapp) " +
-                                "SELECT '1','Centro','N','22.0.0' " +
+                                "SELECT '1','Centro','N','23.0.0' " +
                                 "WHERE NOT EXISTS (SELECT 1 FROM sedes WHERE id_sede='1')"
                 );
 

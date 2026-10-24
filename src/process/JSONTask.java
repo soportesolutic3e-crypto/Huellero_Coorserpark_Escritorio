@@ -26,7 +26,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,29 +52,30 @@ import org.json.JSONObject;
  * - Para HTTP 404: mensaje incluye el nombre del servicio y un extracto del cuerpo.
  * - getHttpStatus()/getErrorMessage() permiten a la capa superior mostrar en UI.
  *
- * FAILOVER (v23):
- * - Lee config.ip (principal) y config.ip_alterna (alterna) frescos en cada instancia
+ *  * FAILOVER (v23):
+ * - Lee config.ip (IP pública) y config.ip_alterna (IP MPLS) frescos en cada instancia
  *   (nunca se cachea la ruta en un campo static, así un cambio de configuración se
  *   aplica de inmediato).
- * - Si la ruta activa falla, reintenta automáticamente con la otra en la misma petición.
+ * - Comportamiento "sticky": usa la ruta que le sirvió la última vez, sin volver a
+ *   probar la otra por su cuenta. Si la ruta activa falla, cambia automáticamente a
+ *   la otra en la misma petición, y desde ese momento esa pasa a ser la activa hasta
+ *   que ella misma falle en algún momento futuro.
  * - Para servicios de escritura (el nombre empieza con "set", o es "registrarLicencia"),
- *   el reintento por la otra ruta SOLO ocurre si el fallo fue ANTES de terminar de
+ *   el cambio a la otra ruta SOLO ocurre si el fallo fue ANTES de terminar de
  *   enviar el cuerpo de la petición — así nunca se corre el riesgo de duplicar un
  *   evento/vale en el servidor por reintentar algo que quizás ya se procesó.
- * - Revalida la ruta principal cada 5 minutos aunque la alterna esté funcionando,
- *   para volver a ella sola cuando se recupera.
  */
+ 
 public class JSONTask {
-
-    /** Expuesto para diagnóstico: último host/ip principal leído desde config.ip */
+    /** Expuesto para diagnóstico: última IP pública leída desde config.ip */
     public static String wqueruta;
 
     private final String servicio;
     private final HashMap<String, String> parametros;
 
-    /** Rutas base leídas frescas en el constructor. rutaAlterna puede ser "". */
-    private final String rutaPrincipal;
-    private final String rutaAlterna;
+    /** Rutas base leídas frescas en el constructor. rutaMpls puede ser "". */
+    private final String rutaPublica;
+    private final String rutaMpls;
 
     private final int connectTimeoutMs;
     private final int readTimeoutMs;
@@ -84,18 +84,18 @@ public class JSONTask {
     public boolean error = false;
     public String mensaje_e = "";
 
-    /** Diagnóstico: "PRINCIPAL", "ALTERNA" o "NINGUNA" (ambas fallaron). */
+    /** Diagnóstico: "PUBLICA", "MPLS" o "NINGUNA" (ambas fallaron). */
     public String rutaUsada = "";
 
     private int httpStatus = 0;
     private String httpReason = "";
     private String rawResponse = "";
 
-    // ── Estado compartido de failover (vive mientras el proceso esté corriendo) ──
-    private static final AtomicBoolean usandoAlterna = new AtomicBoolean(false);
-    private static final AtomicLong proximoReintentoPrincipal = new AtomicLong(0L);
-    private static final long REINTENTO_PRINCIPAL_MS = 5 * 60 * 1000L; // 5 minutos
-
+    // ── Estado "sticky" compartido (vive mientras el proceso esté corriendo): ──
+    // ── true = la última ruta que sirvió fue la MPLS; false = la pública.    ──
+    private static final AtomicBoolean usandoMpls = new AtomicBoolean(false);
+    
+    
     private static final int CONNECT_TIMEOUT_DEFAULT = 3500;
     private static final int READ_TIMEOUT_DEFAULT = 10000;
     private static final int CONNECT_TIMEOUT_VIVO = 2500;
@@ -116,8 +116,8 @@ public class JSONTask {
      */
     public JSONTask(String servicio, HashMap<String, String> parametros, boolean llamadaEnVivo) {
 
-        String ipPrincipal = "";
-        String ipAlterna = "";
+        String ipPublica = "";
+        String ipMpls = "";
 
         ConexionDb d = new ConexionDb();
         try {
@@ -125,26 +125,26 @@ public class JSONTask {
 
             HashMap<String, String> res_has_ip = d.selectOne("SELECT valor FROM config WHERE dato='ip'");
             if (res_has_ip != null && res_has_ip.get("valor") != null) {
-                ipPrincipal = res_has_ip.get("valor").trim();
+                ipPublica = res_has_ip.get("valor").trim();
             } else {
                 System.out.println("++++++++++++++++++++++++++++++++++ NO IP DATA");
             }
 
             HashMap<String, String> res_has_ip_alt = d.selectOne("SELECT valor FROM config WHERE dato='ip_alterna'");
             if (res_has_ip_alt != null && res_has_ip_alt.get("valor") != null) {
-                ipAlterna = res_has_ip_alt.get("valor").trim();
+                ipMpls = res_has_ip_alt.get("valor").trim();
             }
 
-            wqueruta = ipPrincipal;
-            System.out.println("Ruta principal: " + ipPrincipal + " | Ruta alterna: " + ipAlterna);
+            wqueruta = ipPublica;
+            System.out.println("IP publica: " + ipPublica + " | IP MPLS: " + ipMpls);
         } catch (SQLException ex) {
             Logger.getLogger(JSONTask.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try { d.close(); } catch (SQLException ignore) {}
         }
 
-        this.rutaPrincipal = ipPrincipal;
-        this.rutaAlterna = ipAlterna;
+        this.rutaPublica = ipPublica;
+        this.rutaMpls = ipMpls;
         this.parametros = parametros;
         this.servicio = servicio;
         this.connectTimeoutMs = llamadaEnVivo ? CONNECT_TIMEOUT_VIVO : CONNECT_TIMEOUT_DEFAULT;
@@ -199,27 +199,21 @@ public class JSONTask {
         return s.startsWith("set") || s.equals("registrarlicencia");
     }
 
-    /**
-     * Hace el POST (con failover) y parsea la salida a HashMap<String,String>.
-     */
-    protected HashMap<String, String> exe() {
+        protected HashMap<String, String> exe() {
 
-        boolean haySegundaRuta = rutaAlterna != null && !rutaAlterna.isEmpty()
-                && !rutaAlterna.equals(rutaPrincipal);
+        boolean haySegundaRuta = rutaMpls != null && !rutaMpls.isEmpty()
+                && !rutaMpls.equals(rutaPublica);
 
-        long ahora = System.currentTimeMillis();
-        boolean preferirAlterna = haySegundaRuta
-                && usandoAlterna.get()
-                && ahora < proximoReintentoPrincipal.get();
+        boolean preferirMpls = haySegundaRuta && usandoMpls.get();
 
-        String primera = preferirAlterna ? rutaAlterna : rutaPrincipal;
-        String segunda = preferirAlterna ? rutaPrincipal : rutaAlterna;
+        String primera = preferirMpls ? rutaMpls : rutaPublica;
+        String segunda = preferirMpls ? rutaPublica : rutaMpls;
 
         Intento r1 = intentarConexion(primera);
 
         if (r1.ok) {
-            marcarResultado(!preferirAlterna ? false : true);
-            aplicarResultado(r1, preferirAlterna ? "ALTERNA" : "PRINCIPAL");
+            // Sigue sirviendo la misma ruta de siempre; no hay que tocar el estado.
+            aplicarResultado(r1, preferirMpls ? "MPLS" : "PUBLICA");
             return r1.datos;
         }
 
@@ -229,8 +223,9 @@ public class JSONTask {
         if (puedeReintentar) {
             Intento r2 = intentarConexion(segunda);
             if (r2.ok) {
-                marcarResultado(!preferirAlterna);
-                aplicarResultado(r2, preferirAlterna ? "PRINCIPAL" : "ALTERNA");
+                // La que estaba activa falló: la otra pasa a ser la "sticky" desde ahora.
+                usandoMpls.set(!preferirMpls);
+                aplicarResultado(r2, preferirMpls ? "PUBLICA" : "MPLS");
                 return r2.datos;
             }
             aplicarResultado(r2, "NINGUNA");
@@ -239,16 +234,6 @@ public class JSONTask {
 
         aplicarResultado(r1, "NINGUNA");
         return null;
-    }
-
-    /** Actualiza el estado compartido de qué ruta quedó activa para las próximas llamadas. */
-    private void marcarResultado(boolean usoAlterna) {
-        usandoAlterna.set(usoAlterna);
-        if (usoAlterna) {
-            proximoReintentoPrincipal.set(System.currentTimeMillis() + REINTENTO_PRINCIPAL_MS);
-        } else {
-            proximoReintentoPrincipal.set(0L);
-        }
     }
 
     private void aplicarResultado(Intento r, String rutaUsadaTxt) {
@@ -283,7 +268,7 @@ public class JSONTask {
             String codificado = Base64.getEncoder().encodeToString(ptext);
             String data = "data=" + URLEncoder.encode(codificado, "UTF-8");
 
-            String base = rutaBase + "/?fn=";
+            String base = rutaBase + "/blank_ws_huellero/?fn=";;
             URI uri;
             try {
                 uri = new URI(base + servicio);

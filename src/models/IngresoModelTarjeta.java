@@ -1293,6 +1293,29 @@ mensaje_vale = "Llegada tarde - Retención de Vale - Límite: " + horaPermitidaS
         if (Sincronizar.wsinconexion == 1) vista.webServices("Sin Conexión a Red: verificar!");
     }
 
+ /*****************************************************************************************************/    
+     private void mostrarHorarioDelDia() {
+        String hoy = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        try (ConexionDb db = new ConexionDb()) {
+            db.Conectar();
+            try (PreparedStatement ps = db.getConnection().prepareStatement(
+                    "SELECT INICIO, FIN FROM horarios_tmp WHERE CC = ? AND fecha = ? LIMIT 1")) {
+                ps.setString(1, wcedula);
+                ps.setString(2, hoy);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String ini = rs.getString("INICIO");
+                        String fin = rs.getString("FIN");
+                        vista.txtHIngreso_setText(ini == null ? "" : ini);
+                        vista.txtHoraSalida_setText(fin == null ? "" : fin);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
  /*****************************************************************************************************/
     
  /**
@@ -1330,12 +1353,22 @@ mensaje_vale = "Llegada tarde - Retención de Vale - Límite: " + horaPermitidaS
               no valida vale
               no intenta imprimir
          ===================================================== */
-         if (!isImpresionValeActiva()) {
+        /* 
+        if (!isImpresionValeActiva()) {
              System.out.println("IMPRESION DE VALES DESACTIVADA POR CONFIGURACION");
              vista.txtMensajeVale_setText("");
              vista.EnviarTexto("Impresión de vales desactivada por configuración.");
              return;
          }
+        */
+        if (!isImpresionValeActiva()) {
+        System.out.println("IMPRESION DE VALES DESACTIVADA POR CONFIGURACION");
+        mostrarHorarioDelDia();
+        vista.txtMensajeVale_setText("");
+        vista.EnviarTexto("Impresión de vales desactivada por configuración.");
+        return;
+        }
+        
         final boolean es_fijo = !"0".equals(wesfijo); // fijo: "1", rotativo: "0"
         boolean tiene_horario = true;
 

@@ -109,6 +109,7 @@ public class EscposValePrinter {
 
             /* PIE */
             esc.writeLF(center, "@Solutic3E | Transformando Ideas");
+            esc.writeLF(center, "V23.0.0");
             esc.writeLF("");
             esc.writeLF("");
             esc.writeLF("");

@@ -151,6 +151,13 @@ public class ConfigurarModel {
             Db.insertHashMap(camposIp, "config", d.getStatement()); */
             
             
+            d.getStatement().executeUpdate("DELETE FROM config WHERE dato='id_sede'");
+            HashMap<String, String> camposSede = new HashMap<>();
+            camposSede.put("dato", "id_sede");
+            camposSede.put("valor", idSede);
+            Db.insertHashMap(camposSede, "config", d.getStatement());
+
+            
             // VERSION 23 15-09-2026
             // ip
             d.getStatement().executeUpdate("DELETE FROM config WHERE dato='ip'");
