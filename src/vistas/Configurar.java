@@ -23,6 +23,7 @@ public class Configurar extends JFrame implements java.awt.event.WindowListener 
     // ── Componentes requeridos por ConfigurarModel ────────────────────────────
     private JComboBox<String> jbxSedes;
     private JTextField        txtip;
+    private JTextField        txtipalt; //NUEVO V23 15-09-2029
     private JButton           btnGuardar;
     private JButton           btnCancelar;
     private JLabel            lblicon;
@@ -46,8 +47,8 @@ public class Configurar extends JFrame implements java.awt.event.WindowListener 
     private void buildUI() {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setResizable(false);
-        setSize(460, 310);
-
+        //setSize(460, 310); V22 ORIGINAL
+        setSize(460, 350); //V23 NUEVA
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(BG_PAGE);
         setContentPane(root);
@@ -176,16 +177,52 @@ public class Configurar extends JFrame implements java.awt.event.WindowListener 
             new RoundedBorder(BORDER_C, 8),
             BorderFactory.createEmptyBorder(4, 8, 4, 8)
         ));
+        
+        /*g.gridx=1; g.gridy=2; g.weightx=1; g.insets=new Insets(0,0,0,0);
+        card.add(txtip, g);
+        GridBagConstraints wc = new GridBagConstraints();*/
+        
+        // VERISON V23 15-09-2026
         g.gridx=1; g.gridy=2; g.weightx=1; g.insets=new Insets(0,0,0,0);
         card.add(txtip, g);
 
+        // ── IP ALTERNA
+        g.gridwidth=1;
+        JLabel lblIpAlt = makeLabel("IP ALTERNA");
+        g.gridx=0; g.gridy=3; g.weightx=0; g.insets=new Insets(10,0,0,14);
+        card.add(lblIpAlt, g);
+
+        txtipalt = new JTextField() {
+            @Override protected void paintComponent(Graphics g2) {
+                Graphics2D gx = (Graphics2D) g2.create();
+                gx.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                gx.setColor(BG_FIELD);
+                gx.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                gx.dispose();
+                super.paintComponent(g2);
+            }
+        };
+        txtipalt.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        txtipalt.setForeground(TXT_PRI);
+        txtipalt.setBackground(BG_FIELD);
+        txtipalt.setOpaque(false);
+        txtipalt.setPreferredSize(new Dimension(250, 34));
+        txtipalt.setBorder(new CompoundBorder(
+            new RoundedBorder(BORDER_C, 8),
+            BorderFactory.createEmptyBorder(4, 8, 4, 8)
+        ));
+        g.gridx=1; g.gridy=3; g.weightx=1; g.insets=new Insets(10,0,0,0);
+        card.add(txtipalt, g);
+
         GridBagConstraints wc = new GridBagConstraints();
+        
         wc.fill = GridBagConstraints.BOTH;
         wc.weightx = 1; wc.weighty = 1;
         wrapper.add(card, wc);
         return wrapper;
     }
-
+    
+    //==================================================================================================================
     // ── Footer con botones ────────────────────────────────────────────────────
     private JPanel buildFooter() {
         JPanel footer = new JPanel(new BorderLayout());
@@ -292,8 +329,14 @@ public class Configurar extends JFrame implements java.awt.event.WindowListener 
     public void jbxSedes_removeAllItems()         { jbxSedes.removeAllItems(); }
     public void jbxSedes_addItem(String item)     { jbxSedes.addItem(item); }
     public void jbxSedes_setSelectedItem(String s){ jbxSedes.setSelectedItem(s); }
+    //public void txtip_setText(String s)           { txtip.setText(s); } /*V22*/
+    //public String txtip_getText()                 { return txtip.getText(); } /*V22*/
+    
+    //************ V23 15-09-2026 ********************
     public void txtip_setText(String s)           { txtip.setText(s); }
     public String txtip_getText()                 { return txtip.getText(); }
+    public void txtipalt_setText(String s)        { txtipalt.setText(s); }
+    public String txtipalt_getText()              { return txtipalt.getText(); }
 
     // ── WindowListener ────────────────────────────────────────────────────────
     @Override public void windowClosing(WindowEvent e) {

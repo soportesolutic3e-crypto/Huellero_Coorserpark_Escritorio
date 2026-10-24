@@ -398,7 +398,7 @@ public class Inicio extends JFrame {
         jLabel3.setFont(new Font("Segoe UI", Font.BOLD, 12));
         jLabel3.setForeground(Color.WHITE);
 
-        jLabel1 = new JLabel("Ver 22.0 · 25032026");
+        jLabel1 = new JLabel("Ver 23.0 · 15092026");
         jLabel1.setFont(new Font("Segoe UI", Font.BOLD, 12));
         jLabel1.setForeground(Color.WHITE);
 

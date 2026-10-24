@@ -55,7 +55,7 @@ public class ConfigurarModel {
                     }
                 }
             }
-
+            /*  VERSION 21 ORIGINAL
             // 2) IP actual
             String ipActual = "999.999.999.999:99";
             HashMap<String, String> resIp = d.selectOne("SELECT valor FROM config WHERE dato='ip'");
@@ -64,6 +64,25 @@ public class ConfigurarModel {
                 if (v != null && !v.trim().isEmpty()) ipActual = v.trim();
             }
             vista.txtip_setText(ipActual);
+            */
+            
+            // VERSION V23 15-09-2026
+            // 2) IP actual
+            String ipActual = "999.999.999.999:99";
+            HashMap<String, String> resIp = d.selectOne("SELECT valor FROM config WHERE dato='ip'");
+            if (resIp != null) {
+                String v = resIp.get("valor");
+                if (v != null && !v.trim().isEmpty()) ipActual = v.trim();
+            }
+            vista.txtip_setText(ipActual);
+
+            // 2b) IP alterna actual (opcional, puede estar vacía)
+            String ipAlternaActual = "";
+            HashMap<String, String> resIpAlt = d.selectOne("SELECT valor FROM config WHERE dato='ip_alterna'");
+            if (resIpAlt != null && resIpAlt.get("valor") != null) {
+                ipAlternaActual = resIpAlt.get("valor").trim();
+            }
+            vista.txtipalt_setText(ipAlternaActual);
 
             // 3) Sede seleccionada
             HashMap<String, String> resSede = d.selectOne("SELECT valor FROM config WHERE dato='id_sede'");
@@ -116,6 +135,7 @@ public class ConfigurarModel {
         try {
             d.Conectar();
 
+            /* VERSION 21 ORIGINAL
             // id_sede
             d.getStatement().executeUpdate("DELETE FROM config WHERE dato='id_sede'");
             HashMap<String, String> camposSede = new HashMap<>();
@@ -128,7 +148,34 @@ public class ConfigurarModel {
             HashMap<String, String> camposIp = new HashMap<>();
             camposIp.put("dato", "ip");
             camposIp.put("valor", ip);
+            Db.insertHashMap(camposIp, "config", d.getStatement()); */
+            
+            
+            d.getStatement().executeUpdate("DELETE FROM config WHERE dato='id_sede'");
+            HashMap<String, String> camposSede = new HashMap<>();
+            camposSede.put("dato", "id_sede");
+            camposSede.put("valor", idSede);
+            Db.insertHashMap(camposSede, "config", d.getStatement());
+
+            
+            // VERSION 23 15-09-2026
+            // ip
+            d.getStatement().executeUpdate("DELETE FROM config WHERE dato='ip'");
+            HashMap<String, String> camposIp = new HashMap<>();
+            camposIp.put("dato", "ip");
+            camposIp.put("valor", ip);
             Db.insertHashMap(camposIp, "config", d.getStatement());
+
+            // ip_alterna (opcional)
+            String ipAlterna = vista.txtipalt_getText();
+            if (ipAlterna == null) ipAlterna = "";
+            ipAlterna = ipAlterna.trim();
+
+            d.getStatement().executeUpdate("DELETE FROM config WHERE dato='ip_alterna'");
+            HashMap<String, String> camposIpAlt = new HashMap<>();
+            camposIpAlt.put("dato", "ip_alterna");
+            camposIpAlt.put("valor", ipAlterna);
+            Db.insertHashMap(camposIpAlt, "config", d.getStatement());
 
         } finally {
             try { d.close(); } catch (Exception ignore) {}
